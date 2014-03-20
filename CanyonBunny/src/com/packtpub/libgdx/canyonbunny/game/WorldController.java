@@ -6,9 +6,10 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.packtpub.libgdx.canyonbunny.util.CameraHelper;
 
 /**
@@ -41,15 +42,14 @@ public class WorldController extends InputAdapter {
 	private void initTestObjects() {
 		// Create new array of 5 sprites
 		testSprites = new Sprite[5];
-		// Create empty POT-sized Pixmap with 8 bit RGBA pixel data
-		int width = 32;
-		int height = 32;
-		Pixmap pixmap = createProceduralPixamap(width, height);
-		// Create new texture from pixmap data
-		Texture texture = new Texture(pixmap);
-		// Create new sprites using the just created texture
+		// Create a list of texture regions
+		Array<TextureRegion> regions = new Array<TextureRegion>();
+		regions.add(Assets.instance.bunny.head);
+		regions.add(Assets.instance.feather.feather);
+		regions.add(Assets.instance.goldCoin.goldCoin);
+		// Create new sprites using a random texture region
 		for (int i = 0; i < testSprites.length; i++) {
-			Sprite spr = new Sprite(texture);
+			Sprite spr = new Sprite(regions.random());
 			spr.setSize(1, 1);
 			spr.setOrigin(spr.getWidth() / 2f, spr.getHeight() / 2f);
 			float randomX = MathUtils.random(-2f, 2f);
