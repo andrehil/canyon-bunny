@@ -4,7 +4,13 @@ import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.math.Rectangle;
+import com.packtpub.libgdx.canyonbunny.game.objects.BunnyHead;
+import com.packtpub.libgdx.canyonbunny.game.objects.BunnyHead.JUMP_STATE;
+import com.packtpub.libgdx.canyonbunny.game.objects.Feather;
+import com.packtpub.libgdx.canyonbunny.game.objects.GoldCoin;
 import com.packtpub.libgdx.canyonbunny.game.objects.Level;
+import com.packtpub.libgdx.canyonbunny.game.objects.Rock;
 import com.packtpub.libgdx.canyonbunny.util.CameraHelper;
 import com.packtpub.libgdx.canyonbunny.util.Constants;
 
@@ -23,6 +29,10 @@ public class WorldController extends InputAdapter {
 	public int lives;
 	public int score;
 
+	// Rectangles for collision detection
+	private final Rectangle r1 = new Rectangle();
+	private final Rectangle r2 = new Rectangle();
+
 	/**
 	 * Default constructor.
 	 */
@@ -40,6 +50,7 @@ public class WorldController extends InputAdapter {
 		lives = Constants.LIVES_START;
 		score = 0;
 		level = new Level(Constants.LEVEL_01);
+		cameraHelper.setTarget(level.bunnyHead);
 	}
 
 	/**
@@ -49,7 +60,32 @@ public class WorldController extends InputAdapter {
 	 */
 	public void update(float deltaTime) {
 		handleDebugInput(deltaTime);
+		handleInputGame(deltaTime);
+		level.update(deltaTime);
+		testCollisions();
 		cameraHelper.update(deltaTime);
+	}
+
+	private void handleInputGame(float deltaTime) {
+		if (cameraHelper.hasTarget(level.bunnyHead)) {
+			// Player Movement
+			if (Gdx.input.isKeyPressed(Keys.LEFT)) {
+				level.bunnyHead.velocity.x = -level.bunnyHead.terminalVelocity.x;
+			} else if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
+				level.bunnyHead.velocity.x = level.bunnyHead.terminalVelocity.x;
+			} else {
+				// Execute auto-forward movement on non-desktop platform
+				if (Gdx.app.getType() != ApplicationType.Desktop) {
+					level.bunnyHead.velocity.x = level.bunnyHead.terminalVelocity.x;
+				}
+			}
+			// Bunny Jump
+			if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) {
+				level.bunnyHead.setJumping(true);
+			}
+		} else {
+			level.bunnyHead.setJumping(false);
+		}
 	}
 
 	private void handleDebugInput(float deltaTime) {
@@ -57,26 +93,28 @@ public class WorldController extends InputAdapter {
 			return;
 		}
 
-		// Camera controls
-		float camMoveSpeed = 5 * deltaTime;
-		float camMoveSpeedAccelerationFactor = 5;
-		if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
-			camMoveSpeed *= camMoveSpeedAccelerationFactor;
-		}
-		if (Gdx.input.isKeyPressed(Keys.LEFT)) {
-			moveCamera(-camMoveSpeed, 0);
-		}
-		if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
-			moveCamera(camMoveSpeed, 0);
-		}
-		if (Gdx.input.isKeyPressed(Keys.UP)) {
-			moveCamera(0, camMoveSpeed);
-		}
-		if (Gdx.input.isKeyPressed(Keys.DOWN)) {
-			moveCamera(0, -camMoveSpeed);
-		}
-		if (Gdx.input.isKeyPressed(Keys.BACKSPACE)) {
-			cameraHelper.setPosition(0, 0);
+		if (!cameraHelper.hasTarget(level.bunnyHead)) {
+			// Camera controls (move)
+			float camMoveSpeed = 5 * deltaTime;
+			float camMoveSpeedAccelerationFactor = 5;
+			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+				camMoveSpeed *= camMoveSpeedAccelerationFactor;
+			}
+			if (Gdx.input.isKeyPressed(Keys.LEFT)) {
+				moveCamera(-camMoveSpeed, 0);
+			}
+			if (Gdx.input.isKeyPressed(Keys.RIGHT)) {
+				moveCamera(camMoveSpeed, 0);
+			}
+			if (Gdx.input.isKeyPressed(Keys.UP)) {
+				moveCamera(0, camMoveSpeed);
+			}
+			if (Gdx.input.isKeyPressed(Keys.DOWN)) {
+				moveCamera(0, -camMoveSpeed);
+			}
+			if (Gdx.input.isKeyPressed(Keys.BACKSPACE)) {
+				cameraHelper.setPosition(0, 0);
+			}
 		}
 
 		// Camera Controls (zoom)
@@ -108,7 +146,89 @@ public class WorldController extends InputAdapter {
 			init();
 			Gdx.app.debug(TAG, "Game world resetted");
 		}
+		// Toggle camera follow
+		else if (keycode == Keys.ENTER) {
+			cameraHelper.setTarget(cameraHelper.hasTarget() ? null : level.bunnyHead);
+			Gdx.app.debug(TAG, "Camera follow enabled: " + cameraHelper.hasTarget());
+		}
 		return false;
+	}
+
+	private void onCollisionBunnyHeadWithRock(Rock rock) {
+		BunnyHead bunnyHead = level.bunnyHead;
+		float heightDifference = Math.abs(bunnyHead.position.y - (rock.position.y + rock.bounds.height));
+		if (heightDifference > 0.25f) {
+			boolean hitLeftEdge = bunnyHead.position.x > rock.position.x + rock.bounds.width / 2.0f;
+			if (hitLeftEdge) {
+				bunnyHead.position.x = rock.position.x + rock.bounds.width;
+			} else {
+				bunnyHead.position.x = rock.position.x - bunnyHead.bounds.width;
+			}
+			return;
+		}
+		switch (bunnyHead.jumpState) {
+		case GROUNDED:
+			break;
+		case FALLING:
+		case JUMP_FALLING:
+			bunnyHead.position.y = rock.position.y + bunnyHead.bounds.height + bunnyHead.origin.y;
+			bunnyHead.jumpState = JUMP_STATE.GROUNDED;
+			break;
+		case JUMP_RISING:
+			bunnyHead.position.y = rock.position.y + bunnyHead.bounds.height + bunnyHead.origin.y;
+			break;
+		}
+	}
+
+	private void onCollisionBunnyWithGoldCoin(GoldCoin goldcoin) {
+		goldcoin.collected = true;
+		score += goldcoin.getScore();
+		Gdx.app.log(TAG, "Gold coin collected");
+	}
+
+	private void onCollisionBunnyWithFeather(Feather feather) {
+		feather.collected = true;
+		score += feather.getScore();
+		level.bunnyHead.setFeatherPowerup(true);
+		Gdx.app.log(TAG, "Feather collected");
+	}
+
+	private void testCollisions() {
+		r1.set(level.bunnyHead.position.x, level.bunnyHead.position.y, level.bunnyHead.bounds.width, level.bunnyHead.bounds.height);
+		// Test collision: Bunny Head <-> Rocks
+		for (Rock rock : level.rocks) {
+			r2.set(rock.position.x, rock.position.y, rock.bounds.width, rock.bounds.height);
+			if (!r1.overlaps(r2)) {
+				continue;
+			}
+			onCollisionBunnyHeadWithRock(rock);
+			// IMPORTANT: must do all collisions for valid
+			// edge testing on rocks.
+		}
+		// Test collision: Bunny Head <-> Gold Coins
+		for (GoldCoin goldcoin : level.goldcoins) {
+			if (goldcoin.collected) {
+				continue;
+			}
+			r2.set(goldcoin.position.x, goldcoin.position.y, goldcoin.bounds.width, goldcoin.bounds.height);
+			if (!r1.overlaps(r2)) {
+				continue;
+			}
+			onCollisionBunnyWithGoldCoin(goldcoin);
+			break;
+		}
+		// Test collision: Bunny Head <-> Feathers
+		for (Feather feather : level.feathers) {
+			if (feather.collected) {
+				continue;
+			}
+			r2.set(feather.position.x, feather.position.y, feather.bounds.width, feather.bounds.height);
+			if (!r1.overlaps(r2)) {
+				continue;
+			}
+			onCollisionBunnyWithFeather(feather);
+			break;
+		}
 	}
 
 }
