@@ -21,11 +21,11 @@ public class Rock extends AbstractGameObject {
 		setLength(1);
 	}
 
-	private void setLength(int i) {
-		length = length;
+	private void setLength(int length) {
+		this.length = length;
 	}
 
-	private void increaseLength(int amount) {
+	public void increaseLength(int amount) {
 		length += amount;
 	}
 

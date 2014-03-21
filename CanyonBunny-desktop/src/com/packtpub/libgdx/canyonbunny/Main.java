@@ -8,7 +8,7 @@ import com.badlogic.gdx.tools.imagepacker.TexturePacker2.Settings;
 public class Main {
 
 	private static boolean rebuildAtlas = true;
-	private static boolean drawDebugLines = true;
+	private static boolean drawDebugLines = false;
 
 	public static void main(String[] args) {
 		if (rebuildAtlas) {
@@ -22,8 +22,8 @@ public class Main {
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.title = "CanyonBunny";
 		cfg.useGL20 = false;
-		cfg.width = 800;
-		cfg.height = 480;
+		cfg.width = 400;
+		cfg.height = 240;
 
 		new LwjglApplication(new CanyonBunnyMain(), cfg);
 	}

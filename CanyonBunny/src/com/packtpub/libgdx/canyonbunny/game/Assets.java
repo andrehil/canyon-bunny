@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetErrorListener;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.utils.Disposable;
@@ -21,6 +22,8 @@ public class Assets implements Disposable, AssetErrorListener {
 	public AssetGoldCoin goldCoin;
 	public AssetFeather feather;
 	public AssetLevelDecoration levelDecoration;
+
+	public AssetsFonts fonts;
 
 	private Assets() {
 	}
@@ -41,6 +44,7 @@ public class Assets implements Disposable, AssetErrorListener {
 			texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		}
 
+		fonts = new AssetsFonts();
 		bunny = new AssetBunny(atlas);
 		rock = new AssetRock(atlas);
 		goldCoin = new AssetGoldCoin(atlas);
@@ -56,6 +60,9 @@ public class Assets implements Disposable, AssetErrorListener {
 	@Override
 	public void dispose() {
 		assetManager.dispose();
+		fonts.defaultSmall.dispose();
+		fonts.defaultNormal.dispose();
+		fonts.defaultBig.dispose();
 	}
 
 	public class AssetBunny {
@@ -116,6 +123,29 @@ public class Assets implements Disposable, AssetErrorListener {
 			mountainLeft = atlas.findRegion("mountain_left");
 			mountainRight = atlas.findRegion("mountain_right");
 			waterOverlay = atlas.findRegion("water_overlay");
+		}
+
+	}
+
+	public class AssetsFonts {
+
+		public final BitmapFont defaultSmall;
+		public final BitmapFont defaultNormal;
+		public final BitmapFont defaultBig;
+
+		public AssetsFonts() {
+			// create three fonts using Libgdx's 15px bitmap font
+			defaultSmall = new BitmapFont(Gdx.files.internal("images/arial-15.fnt"), true);
+			defaultNormal = new BitmapFont(Gdx.files.internal("images/arial-15.fnt"), true);
+			defaultBig = new BitmapFont(Gdx.files.internal("images/arial-15.fnt"), true);
+			// set font sizes
+			defaultSmall.setScale(0.75f);
+			defaultNormal.setScale(1.0f);
+			defaultBig.setScale(2.0f);
+			// enable linear texture filtering for smooth fonts
+			defaultSmall.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
+			defaultNormal.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
+			defaultBig.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		}
 
 	}
