@@ -52,6 +52,7 @@ public class Assets implements Disposable, AssetErrorListener {
 		levelDecoration = new AssetLevelDecoration(atlas);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void error(String fileName, Class type, Throwable throwable) {
 		Gdx.app.error(TAG, "Couldn't load asset '" + fileName + "'", throwable);

@@ -14,8 +14,6 @@ import com.packtpub.libgdx.canyonbunny.util.Constants;
  */
 public class WorldRenderer implements Disposable {
 
-	private static final String TAG = WorldRenderer.class.getName();
-
 	private OrthographicCamera camera;
 	private OrthographicCamera cameraGUI;
 	private SpriteBatch batch;
@@ -54,16 +52,23 @@ public class WorldRenderer implements Disposable {
 
 	private void renderGui(SpriteBatch batch) {
 		batch.setProjectionMatrix(cameraGUI.combined);
+
 		batch.begin();
-		// draw collected gold coins icon + text (anchored to top left edge)
-		renderGuiScore(batch);
-		// draw extra lives icon + text (anchored to top right edge)
-		renderGuiExtraLive(batch);
-		// draw FPS text (anchored to bottom right edge)
-		renderGuiFpsCounter(batch);
+		{
+			renderGuiScore(batch);
+			renderGuiFeatherPowerup(batch);
+			renderGuiExtraLive(batch);
+			renderGuiFpsCounter(batch);
+			renderGuiGameOverMessage(batch);
+		}
 		batch.end();
 	}
 
+	/**
+	 * Draw collected gold coins icon + text (anchored to top left edge)
+	 * 
+	 * @param batch
+	 */
 	private void renderGuiScore(SpriteBatch batch) {
 		float x = -15;
 		float y = -15;
@@ -71,6 +76,11 @@ public class WorldRenderer implements Disposable {
 		Assets.instance.fonts.defaultBig.draw(batch, "" + worldController.score, x + 75, y + 37);
 	}
 
+	/**
+	 * Draw extra lives icon + text (anchored to top right edge)
+	 * 
+	 * @param batch
+	 */
 	private void renderGuiExtraLive(SpriteBatch batch) {
 		float x = cameraGUI.viewportWidth - 50 - Constants.LIVES_START * 50;
 		float y = -15;
@@ -83,6 +93,11 @@ public class WorldRenderer implements Disposable {
 		}
 	}
 
+	/**
+	 * Draw FPS text (anchored to bottom right edge)
+	 * 
+	 * @param batch
+	 */
 	private void renderGuiFpsCounter(SpriteBatch batch) {
 		float x = cameraGUI.viewportWidth - 55;
 		float y = cameraGUI.viewportHeight - 15;
@@ -118,6 +133,46 @@ public class WorldRenderer implements Disposable {
 	@Override
 	public void dispose() {
 		batch.dispose();
+	}
+
+	/**
+	 * Draw game over text
+	 * 
+	 * @param batch
+	 */
+	private void renderGuiGameOverMessage(SpriteBatch batch) {
+		if (worldController.isGameOver()) {
+			float x = cameraGUI.viewportWidth / 2;
+			float y = cameraGUI.viewportHeight / 2;
+			BitmapFont fontGameOver = Assets.instance.fonts.defaultBig;
+			fontGameOver.setColor(1, 0.75f, 0.25f, 1);
+			fontGameOver.drawMultiLine(batch, "GAME OVER", x, y, 0, BitmapFont.HAlignment.CENTER);
+			fontGameOver.setColor(1, 1, 1, 1);
+		}
+	}
+
+	/**
+	 * Draw collected feather icon (anchored to top left edge)
+	 * 
+	 * @param batch
+	 */
+	private void renderGuiFeatherPowerup(SpriteBatch batch) {
+		float timeLeftFeatherPowerup = worldController.level.bunnyHead.timeLeftFeatherPowerup;
+		if (timeLeftFeatherPowerup > 0) {
+			float x = -15;
+			float y = 30;
+			// Start icon fade in/out if the left power-up time
+			// is less than 4 seconds. The fade interval is set
+			// to 5 changes per second.
+			if (timeLeftFeatherPowerup < 4) {
+				if ((int) (timeLeftFeatherPowerup * 5) % 2 != 0) {
+					batch.setColor(1, 1, 1, 0.5f);
+				}
+			}
+			batch.draw(Assets.instance.feather.feather, x, y, 50, 50, 100, 100, 0.35f, -0.35f, 0);
+			batch.setColor(1, 1, 1, 1);
+			Assets.instance.fonts.defaultSmall.draw(batch, "" + (int) timeLeftFeatherPowerup, x + 60, y + 57);
+		}
 	}
 
 }

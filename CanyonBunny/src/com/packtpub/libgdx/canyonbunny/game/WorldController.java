@@ -28,6 +28,7 @@ public class WorldController extends InputAdapter {
 	public Level level;
 	public int lives;
 	public int score;
+	private float timeLeftGameOverDelay;
 
 	// Rectangles for collision detection
 	private final Rectangle r1 = new Rectangle();
@@ -43,6 +44,7 @@ public class WorldController extends InputAdapter {
 	private void init() {
 		Gdx.input.setInputProcessor(this);
 		cameraHelper = new CameraHelper();
+		timeLeftGameOverDelay = 0;
 		initLevel();
 	}
 
@@ -60,10 +62,28 @@ public class WorldController extends InputAdapter {
 	 */
 	public void update(float deltaTime) {
 		handleDebugInput(deltaTime);
-		handleInputGame(deltaTime);
+
+		if (isGameOver()) {
+			timeLeftGameOverDelay -= deltaTime;
+			if (timeLeftGameOverDelay < 0) {
+				init();
+			}
+		} else {
+			handleInputGame(deltaTime);
+		}
+
 		level.update(deltaTime);
 		testCollisions();
 		cameraHelper.update(deltaTime);
+
+		if (!isGameOver() && isPlayerInWater()) {
+			lives--;
+			if (isGameOver()) {
+				timeLeftGameOverDelay = Constants.TIME_DELAY_GAME_OVER;
+			} else {
+				initLevel();
+			}
+		}
 	}
 
 	private void handleInputGame(float deltaTime) {
@@ -79,10 +99,10 @@ public class WorldController extends InputAdapter {
 					level.bunnyHead.velocity.x = level.bunnyHead.terminalVelocity.x;
 				}
 			}
-			// Bunny Jump
-			if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) {
-				level.bunnyHead.setJumping(true);
-			}
+		}
+		// Bunny Jump
+		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) {
+			level.bunnyHead.setJumping(true);
 		} else {
 			level.bunnyHead.setJumping(false);
 		}
@@ -229,6 +249,14 @@ public class WorldController extends InputAdapter {
 			onCollisionBunnyWithFeather(feather);
 			break;
 		}
+	}
+
+	public boolean isGameOver() {
+		return lives < 0;
+	}
+
+	public boolean isPlayerInWater() {
+		return level.bunnyHead.position.y < -5;
 	}
 
 }

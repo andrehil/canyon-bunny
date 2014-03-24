@@ -28,7 +28,7 @@ public class Rock extends AbstractGameObject {
 	}
 
 	public void increaseLength(int amount) {
-		length += amount;
+		setLength(length + amount);
 	}
 
 	@Override
