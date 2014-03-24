@@ -1,6 +1,7 @@
 package com.packtpub.libgdx.canyonbunny.game;
 
 import com.badlogic.gdx.Application.ApplicationType;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
@@ -11,6 +12,7 @@ import com.packtpub.libgdx.canyonbunny.game.objects.Feather;
 import com.packtpub.libgdx.canyonbunny.game.objects.GoldCoin;
 import com.packtpub.libgdx.canyonbunny.game.objects.Level;
 import com.packtpub.libgdx.canyonbunny.game.objects.Rock;
+import com.packtpub.libgdx.canyonbunny.screens.MenuScreen;
 import com.packtpub.libgdx.canyonbunny.util.CameraHelper;
 import com.packtpub.libgdx.canyonbunny.util.Constants;
 
@@ -25,6 +27,7 @@ public class WorldController extends InputAdapter {
 
 	CameraHelper cameraHelper;
 
+	private final Game game;
 	public Level level;
 	public int lives;
 	public int score;
@@ -37,19 +40,20 @@ public class WorldController extends InputAdapter {
 	/**
 	 * Default constructor.
 	 */
-	public WorldController() {
+	public WorldController(Game game) {
+		this.game = game;
 		init();
 	}
 
 	private void init() {
 		Gdx.input.setInputProcessor(this);
 		cameraHelper = new CameraHelper();
+		lives = Constants.LIVES_START;
 		timeLeftGameOverDelay = 0;
 		initLevel();
 	}
 
 	private void initLevel() {
-		lives = Constants.LIVES_START;
 		score = 0;
 		level = new Level(Constants.LEVEL_01);
 		cameraHelper.setTarget(level.bunnyHead);
@@ -66,7 +70,7 @@ public class WorldController extends InputAdapter {
 		if (isGameOver()) {
 			timeLeftGameOverDelay -= deltaTime;
 			if (timeLeftGameOverDelay < 0) {
-				init();
+				backToMenu();
 			}
 		} else {
 			handleInputGame(deltaTime);
@@ -171,6 +175,10 @@ public class WorldController extends InputAdapter {
 			cameraHelper.setTarget(cameraHelper.hasTarget() ? null : level.bunnyHead);
 			Gdx.app.debug(TAG, "Camera follow enabled: " + cameraHelper.hasTarget());
 		}
+		// Back to Menu
+		else if (keycode == Keys.ESCAPE || keycode == Keys.BACK) {
+			backToMenu();
+		}
 		return false;
 	}
 
@@ -257,6 +265,11 @@ public class WorldController extends InputAdapter {
 
 	public boolean isPlayerInWater() {
 		return level.bunnyHead.position.y < -5;
+	}
+
+	private void backToMenu() {
+		// switch to menu screen
+		game.setScreen(new MenuScreen(game));
 	}
 
 }
