@@ -1,14 +1,15 @@
 package com.packtpub.libgdx.canyonbunny.screens;
 
-import com.badlogic.gdx.Game;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.packtpub.libgdx.canyonbunny.game.Assets;
 
 public abstract class AbstractGameScreen implements Screen {
-	protected Game game;
 
-	public AbstractGameScreen(Game game) {
+	protected DirectedGame game;
+
+	public AbstractGameScreen(DirectedGame game) {
 		this.game = game;
 	}
 
@@ -26,6 +27,8 @@ public abstract class AbstractGameScreen implements Screen {
 
 	@Override
 	public abstract void pause();
+
+	public abstract InputProcessor getInputProcessor();
 
 	@Override
 	public void resume() {

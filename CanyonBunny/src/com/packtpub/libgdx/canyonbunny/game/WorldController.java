@@ -1,10 +1,10 @@
 package com.packtpub.libgdx.canyonbunny.game;
 
 import com.badlogic.gdx.Application.ApplicationType;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.packtpub.libgdx.canyonbunny.game.objects.BunnyHead;
 import com.packtpub.libgdx.canyonbunny.game.objects.BunnyHead.JUMP_STATE;
@@ -12,7 +12,10 @@ import com.packtpub.libgdx.canyonbunny.game.objects.Feather;
 import com.packtpub.libgdx.canyonbunny.game.objects.GoldCoin;
 import com.packtpub.libgdx.canyonbunny.game.objects.Level;
 import com.packtpub.libgdx.canyonbunny.game.objects.Rock;
+import com.packtpub.libgdx.canyonbunny.screens.DirectedGame;
 import com.packtpub.libgdx.canyonbunny.screens.MenuScreen;
+import com.packtpub.libgdx.canyonbunny.screens.transitions.ScreenTransition;
+import com.packtpub.libgdx.canyonbunny.screens.transitions.ScreenTransitionSlide;
 import com.packtpub.libgdx.canyonbunny.util.CameraHelper;
 import com.packtpub.libgdx.canyonbunny.util.Constants;
 
@@ -27,11 +30,13 @@ public class WorldController extends InputAdapter {
 
 	CameraHelper cameraHelper;
 
-	private final Game game;
+	private final DirectedGame game;
 	public Level level;
 	public int lives;
 	public int score;
 	private float timeLeftGameOverDelay;
+	public float livesVisual;
+	public float scoreVisual;
 
 	// Rectangles for collision detection
 	private final Rectangle r1 = new Rectangle();
@@ -40,21 +45,22 @@ public class WorldController extends InputAdapter {
 	/**
 	 * Default constructor.
 	 */
-	public WorldController(Game game) {
+	public WorldController(DirectedGame game) {
 		this.game = game;
 		init();
 	}
 
 	private void init() {
-		Gdx.input.setInputProcessor(this);
 		cameraHelper = new CameraHelper();
 		lives = Constants.LIVES_START;
+		livesVisual = lives;
 		timeLeftGameOverDelay = 0;
 		initLevel();
 	}
 
 	private void initLevel() {
 		score = 0;
+		scoreVisual = 0;
 		level = new Level(Constants.LEVEL_01);
 		cameraHelper.setTarget(level.bunnyHead);
 	}
@@ -88,6 +94,13 @@ public class WorldController extends InputAdapter {
 				initLevel();
 			}
 		}
+		level.mountains.updateScrollPosition(cameraHelper.getPosition());
+		if (livesVisual > lives) {
+			livesVisual = Math.max(lives, livesVisual - 1 * deltaTime);
+		}
+		if (scoreVisual < score) {
+			scoreVisual = Math.min(score, scoreVisual + 250 * deltaTime);
+		}
 	}
 
 	private void handleInputGame(float deltaTime) {
@@ -103,12 +116,12 @@ public class WorldController extends InputAdapter {
 					level.bunnyHead.velocity.x = level.bunnyHead.terminalVelocity.x;
 				}
 			}
-		}
-		// Bunny Jump
-		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) {
-			level.bunnyHead.setJumping(true);
-		} else {
-			level.bunnyHead.setJumping(false);
+			// Bunny Jump
+			if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) {
+				level.bunnyHead.setJumping(true);
+			} else {
+				level.bunnyHead.setJumping(false);
+			}
 		}
 	}
 
@@ -269,7 +282,8 @@ public class WorldController extends InputAdapter {
 
 	private void backToMenu() {
 		// switch to menu screen
-		game.setScreen(new MenuScreen(game));
+		ScreenTransition transition = ScreenTransitionSlide.init(0.75f, ScreenTransitionSlide.DOWN, false, Interpolation.bounceOut);
+		game.setScreen(new MenuScreen(game), transition);
 	}
 
 }

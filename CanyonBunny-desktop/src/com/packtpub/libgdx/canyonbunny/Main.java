@@ -23,9 +23,9 @@ public class Main {
 
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.title = "CanyonBunny";
-		cfg.useGL20 = false;
-		cfg.width = 400;
-		cfg.height = 240;
+		cfg.useGL20 = true;
+		cfg.width = 800;
+		cfg.height = 480;
 
 		new LwjglApplication(new CanyonBunnyMain(), cfg);
 	}
