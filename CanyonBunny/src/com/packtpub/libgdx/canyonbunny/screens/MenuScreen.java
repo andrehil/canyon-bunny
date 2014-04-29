@@ -23,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.packtpub.libgdx.canyonbunny.game.Assets;
 import com.packtpub.libgdx.canyonbunny.screens.transitions.ScreenTransition;
 import com.packtpub.libgdx.canyonbunny.screens.transitions.ScreenTransitionFade;
+import com.packtpub.libgdx.canyonbunny.util.AudioManager;
 import com.packtpub.libgdx.canyonbunny.util.CharacterSkin;
 import com.packtpub.libgdx.canyonbunny.util.Constants;
 import com.packtpub.libgdx.canyonbunny.util.GamePreferences;
@@ -56,6 +57,7 @@ public class MenuScreen extends AbstractGameScreen {
 	private final float DEBUG_REBUILD_INTERVAL = 5.0f;
 	private final boolean debugEnabled = false;
 	private float debugRebuildStage;
+	private CheckBox chkUseMonochromeShader;
 
 	public MenuScreen(DirectedGame game) {
 		super(game);
@@ -232,6 +234,7 @@ public class MenuScreen extends AbstractGameScreen {
 		selCharSkin.setSelection(prefs.charSkin);
 		onCharSkinSelected(prefs.charSkin);
 		chkShowFpsCounter.setChecked(prefs.showFpsCounter);
+		chkUseMonochromeShader.setChecked(prefs.useMonochromeShader);
 	}
 
 	private void saveSettings() {
@@ -242,6 +245,7 @@ public class MenuScreen extends AbstractGameScreen {
 		prefs.volMusic = sldMusic.getValue();
 		prefs.charSkin = selCharSkin.getSelectionIndex();
 		prefs.showFpsCounter = chkShowFpsCounter.isChecked();
+		prefs.useMonochromeShader = chkUseMonochromeShader.isChecked();
 		prefs.save();
 	}
 
@@ -253,12 +257,14 @@ public class MenuScreen extends AbstractGameScreen {
 	private void onSaveClicked() {
 		saveSettings();
 		onCancelClicked();
+		AudioManager.instance.onSettingsUpdated();
 	}
 
 	private void onCancelClicked() {
 		btnMenuPlay.setVisible(true);
 		btnMenuOptions.setVisible(true);
 		winOptions.setVisible(false);
+		AudioManager.instance.onSettingsUpdated();
 	}
 
 	private Table buildOptWinAudioSettings() {
@@ -319,6 +325,11 @@ public class MenuScreen extends AbstractGameScreen {
 		chkShowFpsCounter = new CheckBox("", skinLibgdx);
 		table.add(new Label("Show FPS Counter", skinLibgdx));
 		table.add(chkShowFpsCounter);
+		table.row();
+		// + Checkbox, "Use Monochrome Shader" label
+		chkUseMonochromeShader = new CheckBox("", skinLibgdx);
+		table.add(new Label("Use Monochrome Shader", skinLibgdx));
+		table.add(chkUseMonochromeShader);
 		table.row();
 		return table;
 	}

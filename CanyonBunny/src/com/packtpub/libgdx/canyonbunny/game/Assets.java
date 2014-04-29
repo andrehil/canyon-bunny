@@ -3,6 +3,8 @@ package com.packtpub.libgdx.canyonbunny.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetErrorListener;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -23,6 +25,9 @@ public class Assets implements Disposable, AssetErrorListener {
 	public AssetFeather feather;
 	public AssetLevelDecoration levelDecoration;
 
+	public AssetSounds sounds;
+	public AssetMusic music;
+
 	public AssetsFonts fonts;
 
 	private Assets() {
@@ -30,8 +35,18 @@ public class Assets implements Disposable, AssetErrorListener {
 
 	public void init(AssetManager assetManager) {
 		this.assetManager = assetManager;
+		// set asset manager error handler
 		assetManager.setErrorListener(this);
+		// load texture atlas
 		assetManager.load(Constants.TEXTURE_ATLAS_OBJECTS, TextureAtlas.class);
+		// load sounds
+		assetManager.load("sounds/jump.wav", Sound.class);
+		assetManager.load("sounds/jump_with_feather.wav", Sound.class);
+		assetManager.load("sounds/pickup_coin.wav", Sound.class);
+		assetManager.load("sounds/pickup_feather.wav", Sound.class);
+		assetManager.load("sounds/live_lost.wav", Sound.class);
+		// load music
+		assetManager.load("music/keith303_-_brand_new_highscore.mp3", Music.class);
 		assetManager.finishLoading();
 
 		Gdx.app.debug(TAG, "# of assets loaded: " + assetManager.getAssetNames().size);
@@ -50,6 +65,8 @@ public class Assets implements Disposable, AssetErrorListener {
 		goldCoin = new AssetGoldCoin(atlas);
 		feather = new AssetFeather(atlas);
 		levelDecoration = new AssetLevelDecoration(atlas);
+		sounds = new AssetSounds(assetManager);
+		music = new AssetMusic(assetManager);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -116,6 +133,8 @@ public class Assets implements Disposable, AssetErrorListener {
 		public final AtlasRegion mountainLeft;
 		public final AtlasRegion mountainRight;
 		public final AtlasRegion waterOverlay;
+		public final AtlasRegion carrot;
+		public final AtlasRegion goal;
 
 		public AssetLevelDecoration(TextureAtlas atlas) {
 			cloud01 = atlas.findRegion("cloud01");
@@ -124,6 +143,8 @@ public class Assets implements Disposable, AssetErrorListener {
 			mountainLeft = atlas.findRegion("mountain_left");
 			mountainRight = atlas.findRegion("mountain_right");
 			waterOverlay = atlas.findRegion("water_overlay");
+			carrot = atlas.findRegion("carrot");
+			goal = atlas.findRegion("goal");
 		}
 
 	}
@@ -149,6 +170,32 @@ public class Assets implements Disposable, AssetErrorListener {
 			defaultBig.getRegion().getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		}
 
+	}
+
+	public class AssetSounds {
+
+		public final Sound jump;
+		public final Sound jumpWithFeather;
+		public final Sound pickupCoin;
+		public final Sound pickupFeather;
+		public final Sound liveLost;
+
+		public AssetSounds(AssetManager am) {
+			jump = am.get("sounds/jump.wav", Sound.class);
+			jumpWithFeather = am.get("sounds/jump_with_feather.wav", Sound.class);
+			pickupCoin = am.get("sounds/pickup_coin.wav", Sound.class);
+			pickupFeather = am.get("sounds/pickup_feather.wav", Sound.class);
+			liveLost = am.get("sounds/live_lost.wav", Sound.class);
+		}
+	}
+
+	public class AssetMusic {
+
+		public final Music song01;
+
+		public AssetMusic(AssetManager am) {
+			song01 = am.get("music/keith303_-_brand_new_highscore.mp3", Music.class);
+		}
 	}
 
 }
