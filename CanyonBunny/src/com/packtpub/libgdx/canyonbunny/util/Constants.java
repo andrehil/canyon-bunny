@@ -77,4 +77,29 @@ public class Constants {
 	 */
 	public static final String PREFERENCES = "canyonbunny.prefs";
 
+	/**
+	 * Number of carrots to spawn
+	 */
+	public static final int CARROTS_SPAWN_MAX = 100;
+
+	/**
+	 * Spawn radius for carrots
+	 */
+	public static final float CARROTS_SPAWN_RADIUS = 3.5f;
+
+	/**
+	 * Delay after game finished
+	 */
+	public static final float TIME_DELAY_GAME_FINISHED = 6;
+
+	/**
+	 * Monochrome vertex shader
+	 */
+	public static final String SHADER_MONOCHROME_VERTEX = "shaders/monochrome.vs";
+
+	/**
+	 * Monochrome fragment shader
+	 */
+	public static final String SHADER_MONOCHROME_FRAGMENT = "shaders/monochrome.fs";
+
 }
